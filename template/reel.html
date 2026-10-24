@@ -75,6 +75,25 @@
   #chips { left:60px; right:60px; top:1400px; display:flex; flex-wrap:wrap; justify-content:center; gap:18px; }
   .chip { padding:12px 30px; border-radius:50px; font-size:40px; font-weight:900; background:rgba(255,255,255,.12); border:2px solid rgba(255,255,255,.3); }
   #seeReel { left:0; right:0; top:1300px; text-align:center; font-size:56px; font-weight:900; }
+  /* ---------- style 2: luxury black & gold ---------- */
+  body.st-gold #topTag, body.st-gold #phoneCard, body.st-gold .spec .ic { background:linear-gradient(135deg,#f6e2a8,#c9a24a 55%,#8c6a2f); color:#1a1206; box-shadow:0 0 30px rgba(201,162,74,.55); }
+  body.st-gold #phoneCard { box-shadow:0 0 60px rgba(201,162,74,.6), 0 0 0 4px rgba(255,240,200,.6); }
+  body.st-gold .spec { background:linear-gradient(90deg, rgba(201,162,74,.16), rgba(0,0,0,.35)); border-color:rgba(231,195,120,.55); box-shadow:0 10px 40px rgba(0,0,0,.5); }
+  body.st-gold .spec .lb, body.st-gold #newSub, body.st-gold #flavSub, body.st-gold #ctaHint, body.st-gold #blyCard .t2, body.st-gold #pnameEn { color:#e9d8b0; }
+  body.st-gold #newBadge, body.st-gold #orderNow { text-shadow:0 0 40px rgba(201,162,74,.8); }
+  body.st-gold #blyCard { border-color:#c9a24a; background:rgba(201,162,74,.08); }
+  body.st-gold .flav { border-color:rgba(246,226,168,.8); }
+  /* ---------- style 3: fresh & colourful ---------- */
+  body.st-fresh .gold { background:none; color:#fff; -webkit-text-fill-color:#fff; text-shadow:0 6px 0 rgba(0,0,0,.18), 0 0 30px rgba(0,0,0,.25); }
+  body.st-fresh #topTag, body.st-fresh #phoneCard { background:#fff; color:var(--c1); box-shadow:0 12px 40px rgba(0,0,0,.25); }
+  body.st-fresh #phoneCard .num { color:#1b1030; }
+  body.st-fresh .spec { background:rgba(255,255,255,.22); border:2px solid rgba(255,255,255,.6); box-shadow:0 12px 30px rgba(0,0,0,.18); }
+  body.st-fresh .spec .ic { background:#fff; box-shadow:none; }
+  body.st-fresh .spec .lb, body.st-fresh #newSub, body.st-fresh #flavSub, body.st-fresh #ctaHint, body.st-fresh #blyCard .t2, body.st-fresh #pnameEn { color:#fff; opacity:.92; }
+  body.st-fresh #newBadge, body.st-fresh #orderNow { text-shadow:0 8px 0 rgba(0,0,0,.15); }
+  body.st-fresh #blyCard { border-color:#fff; background:rgba(255,255,255,.18); }
+  body.st-fresh #bottomBar { background:rgba(0,0,0,.28); border-color:rgba(255,255,255,.7); }
+  body.st-fresh #price span { border-color:#fff; background:rgba(255,255,255,.2); }
 </style>
 </head>
 <body>
@@ -139,36 +158,50 @@ const sparks = Array.from({ length: 60 }, () => ({ x: R() * W, y: R() * H, ph: R
 
 function drawBg(t) {
   const [c1, c2] = DATA.colors;
-  ctx.globalCompositeOperation = 'source-over';
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, '#0b0717'); g.addColorStop(.5, '#06050b'); g.addColorStop(1, '#070a18');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.globalCompositeOperation = 'screen';
-  // big moving glows in product colors
+  const style = DATA.style || 'neon';
   const glow = (x, y, r, col, a) => { const rg = ctx.createRadialGradient(x, y, 0, x, y, r); rg.addColorStop(0, hexA(col, a)); rg.addColorStop(1, hexA(col, 0)); ctx.fillStyle = rg; ctx.fillRect(x - r, y - r, 2 * r, 2 * r); };
-  glow(540 + Math.sin(t * .5) * 200, 380 + Math.cos(t * .4) * 120, 800, c1, .38);
-  glow(540 + Math.cos(t * .45) * 220, 1550 + Math.sin(t * .35) * 120, 820, c2, .34);
+  ctx.globalCompositeOperation = 'source-over';
+  const g = style === 'fresh' ? ctx.createLinearGradient(0, 0, W, H) : ctx.createLinearGradient(0, 0, 0, H);
+  if (style === 'gold') { g.addColorStop(0, '#0d0a05'); g.addColorStop(.5, '#050403'); g.addColorStop(1, '#0b0805'); }
+  else if (style === 'fresh') { g.addColorStop(0, c1); g.addColorStop(1, c2); }
+  else { g.addColorStop(0, '#0b0717'); g.addColorStop(.5, '#06050b'); g.addColorStop(1, '#070a18'); }
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = style === 'fresh' ? 'soft-light' : 'screen';
+  // big moving glows
+  const gA = style === 'gold' ? '#C9A24A' : style === 'fresh' ? '#FFFFFF' : c1;
+  const gB = style === 'gold' ? c1 : style === 'fresh' ? '#FFFFFF' : c2;
+  glow(540 + Math.sin(t * .5) * 200, 380 + Math.cos(t * .4) * 120, 800, gA, style === 'gold' ? .3 : .38);
+  glow(540 + Math.cos(t * .45) * 220, 1550 + Math.sin(t * .35) * 120, 820, gB, style === 'gold' ? .16 : .34);
   // smoke puffs drifting upward
   for (const s of smoke) {
     const x = s.x + Math.sin(t * s.sp + s.ph) * 120;
     const y = ((s.y - t * s.rise) % (H + 600) + H + 600) % (H + 600) - 300;
-    glow(x, y, s.r * (1 + .15 * Math.sin(t * .7 + s.ph)), s.c < .5 ? c1 : (s.c < .8 ? c2 : '#C9A0FF'), .10);
+    const col = style === 'gold' ? (s.c < .6 ? '#C9A24A' : '#FFF4D6') : style === 'fresh' ? '#FFFFFF' : (s.c < .5 ? c1 : (s.c < .8 ? c2 : '#C9A0FF'));
+    glow(x, y, s.r * (1 + .15 * Math.sin(t * .7 + s.ph)), col, style === 'gold' ? .07 : .10);
   }
   // sparkles
+  ctx.globalCompositeOperation = 'source-over';
   for (const p of sparks) {
     const a = Math.max(0, Math.sin(t * p.f * 3 + p.ph)); if (a < .2) continue;
-    ctx.fillStyle = `rgba(255,240,230,${a * .8})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.s * a, 0, 7); ctx.fill();
+    ctx.fillStyle = style === 'gold' ? `rgba(246,214,140,${a})` : `rgba(255,240,230,${a * .8})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.s * a * (style === 'gold' ? 1.4 : 1), 0, 7); ctx.fill();
   }
-  // bubbles
-  ctx.globalCompositeOperation = 'source-over';
+  // bubbles (gold style: rising gold dust instead)
   for (const b of bubbles) {
-    const y = ((b.y0 - t * b.sp) % (H + 300) + H + 300) % (H + 300) - 150;
+    const y = ((b.y0 - t * b.sp * (style === 'gold' ? .45 : 1)) % (H + 300) + H + 300) % (H + 300) - 150;
     const x = b.x + Math.sin(t * 1.6 + b.ph + y * .004) * b.amp;
-    const col = b.c < .45 ? c1 : (b.c < .85 ? c2 : '#FFFFFF');
+    if (style === 'gold') {
+      const r = 2 + b.r * .12;
+      const rg = ctx.createRadialGradient(x, y, 0, x, y, r * 4);
+      rg.addColorStop(0, 'rgba(255,236,180,.95)'); rg.addColorStop(.25, 'rgba(214,170,80,.5)'); rg.addColorStop(1, 'rgba(201,162,74,0)');
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(x, y, r * 4, 0, 7); ctx.fill();
+      continue;
+    }
+    const col = style === 'fresh' ? '#FFFFFF' : (b.c < .45 ? c1 : (b.c < .85 ? c2 : '#FFFFFF'));
     const rg = ctx.createRadialGradient(x - b.r * .3, y - b.r * .3, b.r * .1, x, y, b.r);
-    rg.addColorStop(0, 'rgba(255,255,255,0.02)'); rg.addColorStop(.75, hexA(col, .12)); rg.addColorStop(1, hexA(col, .45));
+    rg.addColorStop(0, 'rgba(255,255,255,0.02)'); rg.addColorStop(.75, hexA(col, .12)); rg.addColorStop(1, hexA(col, style === 'fresh' ? .35 : .45));
     ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(x, y, b.r, 0, 7); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = Math.max(1.2, b.r * .06); ctx.stroke();
+    ctx.strokeStyle = style === 'fresh' ? 'rgba(255,255,255,.75)' : 'rgba(255,255,255,.45)'; ctx.lineWidth = Math.max(1.2, b.r * .06); ctx.stroke();
     ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.beginPath(); ctx.ellipse(x - b.r * .38, y - b.r * .4, b.r * .22, b.r * .12, -.7, 0, 7); ctx.fill();
   }
 }
@@ -177,6 +210,7 @@ function drawBg(t) {
 const E = {};
 window.setup = (data, mode) => {
   DATA = data; MODE = mode;
+  document.body.className = 'st-' + (data.style || 'neon');
   const [c1, c2] = data.colors;
   document.documentElement.style.setProperty('--c1', c1);
   document.documentElement.style.setProperty('--c2', c2);

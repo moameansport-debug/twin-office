@@ -31,11 +31,13 @@ def allowed(msg):
 AI = bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 FORM = """السعر: 14000
+الستايل: 1
 النكهات:
 - عنب مثلج
 - فراولة وركي
 - نعناع مثلج""" if AI else """الاسم: VOZOL RAVE 40000
 السعر: 14000
+الستايل: 1
 الوصف: 40 ألف سحبة تطوّل وياك
 المواصفات:
 - عدد السحبات: 40,000 سحبة
@@ -53,6 +55,7 @@ HELP = (
     "1️⃣ دز *صورة وحدة* للمنتج، والأفضل الكارتون من القدام وتكون المواصفات واضحة.\n"
     "2️⃣ وبنفس الرسالة، بخانة التعليق (Caption) انسخ هذا الفورم وعدّله:\n\n"
     f"```\n{FORM}\n```\n\n"
+    "🎨 الستايل: 1 نيون (بنفسجي ونيون) ، 2 فخم (أسود وذهبي) ، 3 فريش (ألوان المنتج زاهية). إذا ما كتبته يطلع 1.\n\n"
     + ("المواصفات واسم المنتج آني أقراها من الكارتون. " if AI else "الوصف اختياري. ")
     + "خلال 5 إلى 15 دقيقة يوصلك الفيديو جاهز 🎬"
 )
@@ -84,19 +87,21 @@ def send(chat, text, markdown=True):
 
 # ---------- form parsing ----------
 def parse_form(text):
-    data = {"name": "", "price": "", "tagline": "", "specs": [], "flavors": []}
+    data = {"name": "", "price": "", "tagline": "", "specs": [], "flavors": [], "style": "neon"}
     section = None
     for raw in text.splitlines():
         line = raw.strip()
         if not line:
             continue
-        m = re.match(r"^(اسم المنتج|الاسم|السعر|الوصف|المواصفات|النكهات|الاطعام|الأطعام|الطعم)\s*[:：]?\s*(.*)$", line)
+        m = re.match(r"^(اسم المنتج|الاسم|السعر|الستايل|الستيل|الوصف|المواصفات|النكهات|الاطعام|الأطعام|الطعم)\s*[:：]?\s*(.*)$", line)
         if m:
             key, rest = m.group(1), m.group(2).strip()
             if key in ("الاسم", "اسم المنتج"):
                 data["name"], section = rest, None
             elif key == "السعر":
                 data["price"], section = rest, None
+            elif key == "الستايل":
+                data["style"], section = style_of(rest), None
             elif key == "الوصف":
                 data["tagline"], section = rest, None
             elif key == "المواصفات":
@@ -179,6 +184,14 @@ def prepare_image(src, dst, box=None):
 
 
 # ---------- order ----------
+STYLES = (("gold", ("2", "٢", "فخم", "ذهب", "gold")), ("fresh", ("3", "٣", "فريش", "زاهي", "fresh")))
+
+
+def style_of(text):
+    t = text.lower()
+    return next((name for name, words in STYLES if any(w in t for w in words)), "neon")
+
+
 def handle_order(chat, msg):
     form = parse_form(msg.get("caption", ""))
     needed = (("السعر", "price"), ("النكهات", "flavors")) if AI else (("الاسم", "name"), ("النكهات", "flavors"))
@@ -216,6 +229,7 @@ def handle_order(chat, msg):
         "price": format_price(form["price"]),
         "specs": specs or [{"icon": "✨", "label": "", "value": "جودة أصلية مضمونة"}],
         "flavors": [flavor_entry(f, i) for i, f in enumerate(form["flavors"][:12])],
+        "style": form["style"],
     }
     (work / "product.json").write_text(json.dumps(product, ensure_ascii=False), encoding="utf-8")
 
@@ -223,11 +237,16 @@ def handle_order(chat, msg):
         out = work / f"{mode}.mp4"
         subprocess.run(["node", str(ROOT / "template/render.js"), str(work / "product.json"), mode, str(out)],
                        check=True, cwd=ROOT / "template")
+        title = "🎬 الريلز جاهز" if mode == "reel" else "📱 الستوري جاهز"
         with open(out, "rb") as f:
-            caption = "🎬 الريلز جاهز" if mode == "reel" else "📱 الستوري جاهز"
-            requests.post(f"{API}/sendVideo", data={"chat_id": chat, "caption": caption, "supports_streaming": "true",
+            requests.post(f"{API}/sendVideo", data={"chat_id": chat, "caption": title, "supports_streaming": "true",
                                                     "width": 1080, "height": 1920},
                           files={"video": (f"{mode}.mp4", f, "video/mp4")}, timeout=300)
+        # telegram recompresses videos, so also send the original file for posting at full 1080x1920 quality
+        with open(out, "rb") as f:
+            requests.post(f"{API}/sendDocument", data={"chat_id": chat, "disable_content_type_detection": "true",
+                                                       "caption": "📁 نفس الفيديو بالدقة الكاملة 1080×1920، نزّله وانشره منه"},
+                          files={"document": (f"twin-office-{mode}.mp4", f, "video/mp4")}, timeout=300)
     if caption:
         send(chat, "📝 الكابشن، انسخه ويه الريلز:")
         send(chat, caption, markdown=False)
