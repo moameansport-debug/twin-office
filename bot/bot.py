@@ -7,7 +7,7 @@ run reads the pending updates, handles them, then confirms them with the next of
 Usage: python bot/bot.py check   -> prints has_work=true|false (for the workflow)
        python bot/bot.py run     -> handle all pending messages
 """
-import colorsys, io, json, os, re, subprocess, sys, tempfile
+import colorsys, io, json, os, re, subprocess, sys, tempfile, time
 from pathlib import Path
 
 import requests
@@ -76,13 +76,16 @@ PALETTE = ["#7B2CBF", "#E63946", "#F15BB5", "#14A39A", "#F3A712", "#3A6FF7", "#F
 
 
 def tg(method, **params):
-    r = requests.post(f"{API}/{method}", data=params, timeout=60)
+    r = requests.post(f"{API}/{method}", data=params, timeout=90)
     return r.json()
 
 
 def send(chat, text, markdown=True):
     params = {"parse_mode": "Markdown"} if markdown else {}
-    tg("sendMessage", chat_id=chat, text=text, **params)
+    res = tg("sendMessage", chat_id=chat, text=text, **params)
+    if not res.get("ok") and markdown:  # bad markdown must never leave the customer without an answer
+        print("send failed:", res, file=sys.stderr)
+        tg("sendMessage", chat_id=chat, text=text)
 
 
 # ---------- form parsing ----------
@@ -253,10 +256,6 @@ def handle_order(chat, msg):
     send(chat, "تم ✅ الفيديو بي موسيقى، وإذا تحب تكدر تبدلها بأغنية ترند من انستكرام 🎵\n📞 07515341547")
 
 
-def pending():
-    return tg("getUpdates", timeout=0, allowed_updates=json.dumps(["message"])).get("result", [])
-
-
 def image_of(msg):
     """file_id of the photo in a message: a normal photo, or an image sent as a file."""
     if msg.get("photo"):
@@ -267,40 +266,77 @@ def image_of(msg):
     return None
 
 
-def main():
-    updates = pending()
-    print("updates:", [sorted((u.get("message") or {}).keys()) for u in updates], file=sys.stderr)
-    if sys.argv[1:] == ["check"]:
-        has = any(image_of(m) and allowed(m) for m in (u.get("message") or {} for u in updates))
-        print(f"has_work={'true' if has else 'false'}")
-        if not has and updates:  # only text messages: answer them here, no render needed
-            run(updates)
-        return
-    run(updates)
+def is_form(text):
+    return bool(re.search(r"السعر|النكهات|الاطعام|الأطعام", text or ""))
 
 
-def run(updates):
+# a photo and its form may come as two separate messages; keep the first half for a while
+photos, forms = {}, {}
+KEEP = 30 * 60
+
+
+def handle(msg):
+    chat = msg["chat"]["id"]
+    now = time.time()
+    if not allowed(msg):
+        send(chat, "هذا البوت خاص 🔒 للتواصل ويه مكتب التوام: 07515341547")
+    elif image_of(msg) and msg.get("caption"):
+        handle_order(chat, msg)
+    elif image_of(msg):
+        form = forms.pop(chat, (0, ""))
+        if now - form[0] < KEEP:
+            handle_order(chat, dict(msg, caption=form[1]))
+        else:
+            photos[chat] = (now, msg)
+            send(chat, "وصلت الصورة ✅\nهسه دز الفورم (السعر والنكهات) برسالة، أو اكتب /help حتى تشوف الفورم.")
+    elif is_form(msg.get("text")):
+        photo = photos.pop(chat, (0, None))
+        if now - photo[0] < KEEP:
+            handle_order(chat, dict(photo[1], caption=msg["text"]))
+        else:
+            forms[chat] = (now, msg["text"])
+            send(chat, "وصل الفورم ✅\nهسه دز صورة المنتج (الكارتون من القدام).")
+    else:
+        send(chat, HELP)
+
+
+def process(updates):
     # an album arrives as one message per photo with the caption on only one of them
     albums = {u["message"]["media_group_id"] for u in updates
               if (u.get("message") or {}).get("caption") and u["message"].get("media_group_id")}
+    seen = set()
     for u in updates:
         msg = u.get("message") or {}
-        chat = msg.get("chat", {}).get("id")
-        if not chat or (msg.get("media_group_id") in albums and not msg.get("caption")):
+        group = msg.get("media_group_id")
+        if not msg.get("chat") or (group in albums and not msg.get("caption")) or (group and group in seen):
             continue
+        seen.add(group)
         try:
-            if not allowed(msg):
-                send(chat, "هذا البوت خاص 🔒 للتواصل ويه مكتب التوام: 07515341547")
-            elif image_of(msg):
-                handle_order(chat, msg)
-            else:
-                send(chat, HELP)
+            handle(msg)
         except Exception as e:  # keep going for other customers
-            print("order failed:", e, file=sys.stderr)
-            send(chat, "صار خطأ بالتصميم 😕 جرّب ترجع تدز الصورة ويه الفورم، أو اتصل 07515341547")
-    if updates:
-        tg("getUpdates", offset=updates[-1]["update_id"] + 1, timeout=0)
+            print("order failed:", repr(e), file=sys.stderr)
+            send(msg["chat"]["id"], "صار خطأ بالتصميم 😕 جرّب ترجع تدز الصورة ويه الفورم، أو اتصل 07515341547")
+
+
+def listen(minutes):
+    """Answer messages as they arrive for a while; the workflow starts a new listener after this one."""
+    offset, end = None, time.time() + minutes * 60
+    while time.time() < end:
+        params = {"timeout": 50, "allowed_updates": json.dumps(["message"])}
+        if offset:
+            params["offset"] = offset
+        try:
+            updates = tg("getUpdates", **params).get("result", [])
+        except requests.RequestException as e:
+            print("poll failed:", e, file=sys.stderr)
+            time.sleep(5)
+            continue
+        if updates:
+            offset = updates[-1]["update_id"] + 1
+            tg("getUpdates", offset=offset, timeout=0)  # confirm first so a crash never repeats an order
+            print("updates:", [sorted((u.get("message") or {}).keys()) for u in updates], file=sys.stderr)
+            process(updates)
 
 
 if __name__ == "__main__":
-    main()
+    listen(float(sys.argv[1]) if sys.argv[1:] else 25)

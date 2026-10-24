@@ -2,9 +2,10 @@ name: Telegram design bot
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
+# each run keeps listening for 25 minutes; the next scheduled run waits in the queue and takes over
 concurrency:
   group: telegram-bot
   cancel-in-progress: false
@@ -12,7 +13,7 @@ concurrency:
 jobs:
   bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -23,19 +24,13 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install requests pillow anthropic
-      - name: Check for new orders
-        id: check
-        if: env.TELEGRAM_BOT_TOKEN != ''
-        run: python bot/bot.py check >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
-        if: steps.check.outputs.has_work == 'true'
         with:
           node-version: "20"
       - name: Install renderer
-        if: steps.check.outputs.has_work == 'true'
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fonts-noto-color-emoji
           cd template && npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
-      - name: Make and send videos
-        if: steps.check.outputs.has_work == 'true'
-        run: python bot/bot.py run
+      - name: Answer customers for 25 minutes
+        if: env.TELEGRAM_BOT_TOKEN != ''
+        run: python bot/bot.py 25
