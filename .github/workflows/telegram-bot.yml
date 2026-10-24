@@ -16,6 +16,7 @@ jobs:
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ALLOWED_USERS: ${{ secrets.ALLOWED_USERS }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

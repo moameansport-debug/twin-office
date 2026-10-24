@@ -18,6 +18,15 @@ TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 API = f"https://api.telegram.org/bot{TOKEN}"
 FILE_API = f"https://api.telegram.org/file/bot{TOKEN}"
 
+# Telegram usernames (without @) or numeric ids allowed to use the bot, comma separated; empty = everyone
+ALLOWED = {x.strip().lstrip("@").lower() for x in os.environ.get("ALLOWED_USERS", "").split(",") if x.strip()}
+
+
+def allowed(msg):
+    user = msg.get("from") or {}
+    return not ALLOWED or str(user.get("id")) in ALLOWED or (user.get("username") or "").lower() in ALLOWED
+
+
 # with an Anthropic key the specs and name are read from the box photo, so the form is short
 AI = bool(os.environ.get("ANTHROPIC_API_KEY"))
 
@@ -243,7 +252,7 @@ def main():
     updates = pending()
     print("updates:", [sorted((u.get("message") or {}).keys()) for u in updates], file=sys.stderr)
     if sys.argv[1:] == ["check"]:
-        has = any(image_of(u.get("message") or {}) for u in updates)
+        has = any(image_of(m) and allowed(m) for m in (u.get("message") or {} for u in updates))
         print(f"has_work={'true' if has else 'false'}")
         if not has and updates:  # only text messages: answer them here, no render needed
             run(updates)
@@ -261,7 +270,9 @@ def run(updates):
         if not chat or (msg.get("media_group_id") in albums and not msg.get("caption")):
             continue
         try:
-            if image_of(msg):
+            if not allowed(msg):
+                send(chat, "هذا البوت خاص 🔒 للتواصل ويه مكتب التوام: 07515341547")
+            elif image_of(msg):
                 handle_order(chat, msg)
             else:
                 send(chat, HELP)
