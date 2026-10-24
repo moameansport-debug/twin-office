@@ -18,8 +18,8 @@ TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 API = f"https://api.telegram.org/bot{TOKEN}"
 FILE_API = f"https://api.telegram.org/file/bot{TOKEN}"
 
-# Telegram usernames (without @) or numeric ids allowed to use the bot, comma separated; empty = everyone
-ALLOWED = {x.strip().lstrip("@").lower() for x in os.environ.get("ALLOWED_USERS", "").split(",") if x.strip()}
+# Telegram usernames (without @) or numeric ids allowed to use the bot, separated by commas or spaces; empty = everyone
+ALLOWED = {x.lstrip("@").lower() for x in re.split(r"[,،\s]+", os.environ.get("ALLOWED_USERS", "")) if x.strip("@")}
 
 
 def allowed(msg):
