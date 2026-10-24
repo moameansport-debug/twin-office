@@ -253,7 +253,7 @@ def handle_order(chat, msg):
     if caption:
         send(chat, "📝 الكابشن، انسخه ويه الريلز:")
         send(chat, caption, markdown=False)
-    send(chat, "تم ✅ الفيديو بي موسيقى، وإذا تحب تكدر تبدلها بأغنية ترند من انستكرام 🎵\n📞 07515341547")
+    send(chat, "تم ✅ الفيديو بي موسيقى، وإذا تحب تكدر تبدلها بأغنية ترند من انستكرام 🎵\n📞 07763756593")
 
 
 def image_of(msg):
@@ -279,7 +279,7 @@ def handle(msg):
     chat = msg["chat"]["id"]
     now = time.time()
     if not allowed(msg):
-        send(chat, "هذا البوت خاص 🔒 للتواصل ويه مكتب التوام: 07515341547")
+        send(chat, "هذا البوت خاص 🔒 للتواصل ويه مكتب التوام: 07763756593")
     elif image_of(msg) and msg.get("caption"):
         handle_order(chat, msg)
     elif image_of(msg):
@@ -315,7 +315,7 @@ def process(updates):
             handle(msg)
         except Exception as e:  # keep going for other customers
             print("order failed:", repr(e), file=sys.stderr)
-            send(msg["chat"]["id"], "صار خطأ بالتصميم 😕 جرّب ترجع تدز الصورة ويه الفورم، أو اتصل 07515341547")
+            send(msg["chat"]["id"], "صار خطأ بالتصميم 😕 جرّب ترجع تدز الصورة ويه الفورم، أو اتصل 07763756593")
 
 
 def listen(minutes):

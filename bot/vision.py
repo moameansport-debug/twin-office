@@ -51,7 +51,7 @@ Read ONLY what is actually printed on the packaging and fill the fields:
 - tagline: a short catchy line in Iraqi dialect about the strongest selling point.
 - caption: an Instagram caption in Iraqi Arabic with emojis: a hook line announcing the new
   product, the specs as an emoji list, then the flavours list, then the price, then
-  "📞 للطلب: 07515341547 (اتصال أو واتساب أو بالخاص)" and
+  "📞 للطلب: 07763756593 (اتصال أو واتساب أو بالخاص)" and
   "🛵 التوصيل عن طريق تطبيق بلي لباب البيت", then 8-10 hashtags including #مكتب_التوام.
 
 Price from the customer: {price}
