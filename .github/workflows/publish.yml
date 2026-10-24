@@ -1,0 +1,27 @@
+name: Publish to Instagram
+
+on:
+  workflow_dispatch:
+    inputs:
+      product:
+        description: "Product folder name under products/"
+        required: true
+      what:
+        description: "reel, story, or both"
+        default: both
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Publish
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          PRODUCT: ${{ inputs.product }}
+          WHAT: ${{ inputs.what }}
+        run: python scripts/publish.py "$PRODUCT" "$WHAT"

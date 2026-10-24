@@ -1,1 +1,18 @@
-# twin-office
+# مكتب التوام — Twin Office
+
+قالب ريلز وستوري متحرك للنراكيل الإلكترونية، ونشر تلقائي على انستكرام.
+
+- `template/` القالب (HTML) وسكربت التصدير `render.js`
+- `products/<اسم-المنتج>/` بيانات كل منتج (`product.json`) والصور والفيديوهات (`reel.mp4`, `story.mp4`) والكابشن (`caption.txt`)
+- `.github/workflows/publish.yml` ينشر المنتج على انستكرام (Actions ← Publish to Instagram ← Run workflow)
+
+## التصدير
+```
+cd template
+node render.js ../products/<slug>/product.json reel ../products/<slug>/reel.mp4
+node render.js ../products/<slug>/product.json story ../products/<slug>/story.mp4
+```
+
+## الأسرار المطلوبة (Settings ← Secrets ← Actions)
+- `IG_USER_ID`
+- `IG_ACCESS_TOKEN`

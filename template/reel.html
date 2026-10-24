@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<style>
+  :root { --c1:#8B3DFF; --c2:#1F6BFF; --gold:#E7B79E; --gold2:#B8775E; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { width:1080px; height:1920px; overflow:hidden; background:#06050b; }
+  body { font-family:'Cairo', 'Noto Color Emoji', sans-serif; color:#fff; position:relative; }
+  canvas#bg { position:absolute; inset:0; }
+  .abs { position:absolute; will-change:transform,opacity; }
+  .gold { background:linear-gradient(180deg,#fff1e8 0%,var(--gold) 45%,var(--gold2) 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+  #logoBig { left:240px; top:520px; width:600px; height:600px; }
+  #logoBig img { width:100%; height:100%; border-radius:50%; box-shadow:0 0 90px 10px rgba(139,61,255,.55), 0 0 0 6px rgba(231,183,158,.55); }
+  #logoRing { left:200px; top:480px; width:680px; height:680px; border-radius:50%;
+    background:conic-gradient(from 0deg, transparent 0 20%, var(--c1) 30%, transparent 40% 60%, var(--c2) 70%, transparent 80%);
+    -webkit-mask:radial-gradient(circle, transparent 318px, #000 322px, #000 338px, transparent 342px);
+    mask:radial-gradient(circle, transparent 318px, #000 322px, #000 338px, transparent 342px); }
+  #newBadge { left:0; right:0; top:1190px; text-align:center; font-family:'Lalezar','Noto Color Emoji'; font-size:118px; line-height:1.2;
+    text-shadow:0 0 40px rgba(139,61,255,.9); }
+  #newSub { left:0; right:0; top:1350px; text-align:center; font-size:52px; font-weight:700; color:#e9ddff; }
+
+  #logoSmall { left:60px; top:150px; width:170px; height:170px; }
+  #logoSmall img { width:100%; height:100%; border-radius:50%; box-shadow:0 0 30px rgba(139,61,255,.7), 0 0 0 3px rgba(231,183,158,.6); }
+  #topTag { right:60px; top:190px; padding:14px 34px; border-radius:60px; font-size:42px; font-weight:900;
+    background:linear-gradient(90deg,var(--c1),var(--c2)); box-shadow:0 8px 30px rgba(0,0,0,.4); }
+
+  #rays { left:40px; top:430px; width:1000px; height:1000px; border-radius:50%;
+    background:repeating-conic-gradient(from 0deg, rgba(255,255,255,.10) 0 6deg, transparent 6deg 22deg);
+    -webkit-mask:radial-gradient(circle, #000 0, #000 30%, transparent 70%); mask:radial-gradient(circle, #000 0, #000 30%, transparent 70%); }
+  #product { left:220px; top:520px; width:640px; height:820px; display:flex; align-items:center; justify-content:center; }
+  #product .halo { position:absolute; inset:60px; border-radius:50%; background:radial-gradient(circle, var(--c1) 0%, transparent 65%); opacity:.75; filter:blur(30px); }
+  #product img, #product svg { position:relative; max-width:100%; max-height:100%; object-fit:contain; filter:drop-shadow(0 30px 50px rgba(0,0,0,.6)); }
+  #pname { left:40px; right:40px; top:260px; text-align:center; font-weight:900; font-size:108px; line-height:1.15; }
+  #pnameEn { left:0; right:0; top:395px; text-align:center; font-family:'Cairo'; font-weight:700; font-size:46px; letter-spacing:10px; color:#cfc2ff; direction:ltr; }
+  #tagline { left:60px; right:60px; top:1370px; text-align:center; font-size:58px; font-weight:900; }
+  #price { left:0; right:0; top:1470px; text-align:center; }
+  #price span { display:inline-block; padding:12px 50px; border-radius:24px; font-size:60px; font-weight:900; background:rgba(255,255,255,.1); border:3px solid var(--gold); color:#fff; }
+
+  #specsTitle { right:70px; top:330px; font-family:'Lalezar','Noto Color Emoji'; font-size:96px; }
+  #specs { right:50px; top:480px; width:600px; }
+  .spec { position:absolute; right:0; width:600px; height:138px; border-radius:30px; display:flex; align-items:center; gap:22px; padding:0 26px;
+    background:linear-gradient(90deg, rgba(255,255,255,.14), rgba(255,255,255,.04)); border:2px solid rgba(255,255,255,.18);
+    box-shadow:0 10px 40px rgba(0,0,0,.35), inset 0 0 30px rgba(139,61,255,.15); backdrop-filter:blur(8px); }
+  .spec .ic { width:92px; height:92px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:52px;
+    background:linear-gradient(135deg,var(--c1),var(--c2)); box-shadow:0 0 24px var(--c1); }
+  .spec .lb { font-size:32px; font-weight:700; color:#d8ccff; line-height:1.1; }
+  .spec .vl { font-size:46px; font-weight:900; line-height:1.15; }
+
+  #flavTitle { left:0; right:0; top:300px; text-align:center; font-family:'Lalezar','Noto Color Emoji'; font-size:110px; }
+  #flavSub { left:0; right:0; top:450px; text-align:center; font-size:44px; font-weight:700; color:#e1d6ff; }
+  .flav { position:absolute; display:flex; align-items:center; justify-content:center; gap:16px; border-radius:80px; font-weight:900;
+    border:3px solid rgba(255,255,255,.45); box-shadow:0 12px 40px rgba(0,0,0,.4), inset 0 -12px 30px rgba(0,0,0,.25), inset 0 10px 24px rgba(255,255,255,.35); }
+  .flav .em { font-size:1.25em; }
+
+  #orderNow { left:0; right:0; top:560px; text-align:center; font-family:'Lalezar','Noto Color Emoji'; font-size:170px; line-height:1.1; text-shadow:0 0 50px rgba(139,61,255,.9); }
+  #phoneCard { left:90px; right:90px; top:800px; height:200px; border-radius:100px; display:flex; align-items:center; justify-content:center; gap:28px;
+    background:linear-gradient(90deg,var(--c1),var(--c2)); box-shadow:0 0 60px rgba(139,61,255,.7), 0 0 0 5px rgba(231,183,158,.7); }
+  #phoneCard .num { font-size:96px; font-weight:900; direction:ltr; letter-spacing:3px; }
+  #phoneCard .ic { font-size:84px; }
+  #ctaHint { left:0; right:0; top:1030px; text-align:center; font-size:44px; font-weight:700; color:#e7ddff; }
+  #blyCard { left:110px; right:110px; top:1130px; padding:26px 30px; border-radius:36px; text-align:center;
+    background:rgba(255,255,255,.08); border:3px dashed var(--gold); }
+  #blyCard .t1 { font-size:50px; white-space:nowrap; font-weight:900; }
+  #blyCard .t2 { font-size:40px; font-weight:700; color:#e7ddff; }
+  #ctaLogo { left:410px; top:1400px; width:260px; height:260px; width:280px; height:280px; }
+  #ctaLogo img { width:100%; height:100%; border-radius:50%; box-shadow:0 0 50px rgba(139,61,255,.7), 0 0 0 4px rgba(231,183,158,.6); }
+
+  #bottomBar { left:60px; right:60px; top:1560px; height:110px; border-radius:60px; display:flex; align-items:center; justify-content:space-between; padding:0 40px;
+    background:rgba(10,8,20,.72); border:2px solid rgba(231,183,158,.55); font-size:40px; font-weight:900; }
+  #bottomBar .num { direction:ltr; }
+
+  #chips { left:60px; right:60px; top:1400px; display:flex; flex-wrap:wrap; justify-content:center; gap:18px; }
+  .chip { padding:12px 30px; border-radius:50px; font-size:40px; font-weight:900; background:rgba(255,255,255,.12); border:2px solid rgba(255,255,255,.3); }
+  #seeReel { left:0; right:0; top:1300px; text-align:center; font-size:56px; font-weight:900; }
+</style>
+</head>
+<body>
+<canvas id="bg" width="1080" height="1920"></canvas>
+<div id="stage"></div>
+<script>
+// ---------- helpers ----------
+const W = 1080, H = 1920;
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const easeOut = k => 1 - Math.pow(1 - k, 3);
+const easeInOut = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+const easeBack = k => { const c = 1.9; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
+const easeElastic = k => k === 0 || k === 1 ? k : Math.pow(2, -10 * k) * Math.sin((k * 10 - .75) * (2 * Math.PI / 3)) + 1;
+const prog = (t, a, d) => clamp((t - a) / d);
+// visibility window: fades in at a, out at b
+const win = (t, a, b, fi = .35, fo = .35) => Math.min(prog(t, a, fi), 1 - prog(t, b - fo, fo));
+function rng(seed) { return () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
+// keyframes: [[time, value], ...]
+function kf(t, frames, ease = easeInOut) {
+  if (t <= frames[0][0]) return frames[0][1];
+  for (let i = 1; i < frames.length; i++) {
+    if (t <= frames[i][0]) {
+      const [t0, v0] = frames[i - 1], [t1, v1] = frames[i];
+      return lerp(v0, v1, ease((t - t0) / (t1 - t0)));
+    }
+  }
+  return frames[frames.length - 1][1];
+}
+function el(html, id, cls = 'abs') {
+  const d = document.createElement('div'); d.className = cls; if (id) d.id = id; d.innerHTML = html;
+  document.getElementById('stage').appendChild(d); return d;
+}
+function set(e, o, x = 0, y = 0, s = 1, r = 0, blur = 0) {
+  e.style.opacity = o;
+  e.style.display = o <= 0.001 ? 'none' : '';
+  e.style.transform = `translate(${x}px,${y}px) scale(${s}) rotate(${r}deg)`;
+  e.style.filter = blur > .1 ? `blur(${blur}px)` : '';
+}
+const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+
+// placeholder device drawing (used until a real product photo exists)
+function placeholderSVG(c1, c2) {
+  return `<svg viewBox="0 0 300 700" width="300" height="700" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient>
+  <linearGradient id="s" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".0"/><stop offset=".3" stop-color="#fff" stop-opacity=".45"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+  <rect x="105" y="10" width="90" height="110" rx="30" fill="#141218"/>
+  <rect x="40" y="100" width="220" height="580" rx="80" fill="url(#g)"/>
+  <rect x="40" y="100" width="220" height="580" rx="80" fill="url(#s)"/>
+  <rect x="85" y="300" width="130" height="90" rx="18" fill="#0b0a12" stroke="#fff" stroke-opacity=".4"/>
+  <text x="150" y="358" text-anchor="middle" font-size="40" font-family="Cairo" font-weight="900" fill="#7CF">100%</text>
+  <text x="150" y="560" text-anchor="middle" font-size="44" font-family="Cairo" font-weight="900" fill="#fff" opacity=".85">TWIN</text></svg>`;
+}
+
+// ---------- background: glow, smoke, bubbles ----------
+let DATA, MODE, DUR;
+const ctx = document.getElementById('bg').getContext('2d');
+const R = rng(7);
+const smoke = Array.from({ length: 16 }, () => ({ x: R() * W, y: R() * H, r: 260 + R() * 360, sp: .15 + R() * .35, ph: R() * 6.28, rise: 25 + R() * 50, c: R() }));
+const bubbles = Array.from({ length: 46 }, () => ({ x: R() * W, y0: R() * (H + 300), r: 8 + Math.pow(R(), 2) * 52, sp: 90 + R() * 200, ph: R() * 6.28, amp: 10 + R() * 40, c: R() }));
+const sparks = Array.from({ length: 60 }, () => ({ x: R() * W, y: R() * H, ph: R() * 6.28, f: .6 + R() * 2, s: 1 + R() * 3 }));
+
+function drawBg(t) {
+  const [c1, c2] = DATA.colors;
+  ctx.globalCompositeOperation = 'source-over';
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0b0717'); g.addColorStop(.5, '#06050b'); g.addColorStop(1, '#070a18');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'screen';
+  // big moving glows in product colors
+  const glow = (x, y, r, col, a) => { const rg = ctx.createRadialGradient(x, y, 0, x, y, r); rg.addColorStop(0, hexA(col, a)); rg.addColorStop(1, hexA(col, 0)); ctx.fillStyle = rg; ctx.fillRect(x - r, y - r, 2 * r, 2 * r); };
+  glow(540 + Math.sin(t * .5) * 200, 380 + Math.cos(t * .4) * 120, 800, c1, .38);
+  glow(540 + Math.cos(t * .45) * 220, 1550 + Math.sin(t * .35) * 120, 820, c2, .34);
+  // smoke puffs drifting upward
+  for (const s of smoke) {
+    const x = s.x + Math.sin(t * s.sp + s.ph) * 120;
+    const y = ((s.y - t * s.rise) % (H + 600) + H + 600) % (H + 600) - 300;
+    glow(x, y, s.r * (1 + .15 * Math.sin(t * .7 + s.ph)), s.c < .5 ? c1 : (s.c < .8 ? c2 : '#C9A0FF'), .10);
+  }
+  // sparkles
+  for (const p of sparks) {
+    const a = Math.max(0, Math.sin(t * p.f * 3 + p.ph)); if (a < .2) continue;
+    ctx.fillStyle = `rgba(255,240,230,${a * .8})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.s * a, 0, 7); ctx.fill();
+  }
+  // bubbles
+  ctx.globalCompositeOperation = 'source-over';
+  for (const b of bubbles) {
+    const y = ((b.y0 - t * b.sp) % (H + 300) + H + 300) % (H + 300) - 150;
+    const x = b.x + Math.sin(t * 1.6 + b.ph + y * .004) * b.amp;
+    const col = b.c < .45 ? c1 : (b.c < .85 ? c2 : '#FFFFFF');
+    const rg = ctx.createRadialGradient(x - b.r * .3, y - b.r * .3, b.r * .1, x, y, b.r);
+    rg.addColorStop(0, 'rgba(255,255,255,0.02)'); rg.addColorStop(.75, hexA(col, .12)); rg.addColorStop(1, hexA(col, .45));
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(x, y, b.r, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = Math.max(1.2, b.r * .06); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.beginPath(); ctx.ellipse(x - b.r * .38, y - b.r * .4, b.r * .22, b.r * .12, -.7, 0, 7); ctx.fill();
+  }
+}
+
+// ---------- scene setup ----------
+const E = {};
+window.setup = (data, mode) => {
+  DATA = data; MODE = mode;
+  const [c1, c2] = data.colors;
+  document.documentElement.style.setProperty('--c1', c1);
+  document.documentElement.style.setProperty('--c2', c2);
+  const logo = '<img src="assets/logo.png">';
+  E.ring = el('', 'logoRing'); E.logoBig = el(logo, 'logoBig');
+  E.badge = el(mode === 'story' ? '<span class="gold">نزل منتج جديد</span> 🔥' : '🔥 <span class="gold">وصل جديد</span> 🔥', 'newBadge');
+  E.newSub = el(mode === 'story' ? 'عدنا بمكتب التوام 😍' : 'لا يفوتك… شوف شنو جبنالكم 👀', 'newSub');
+  E.logoSmall = el(logo, 'logoSmall');
+  E.topTag = el('جديد ✨', 'topTag');
+  E.rays = el('', 'rays');
+  const img = data.image ? `<img src="${data.image}">` : placeholderSVG(c1, c2);
+  E.product = el(`<div class="halo"></div>${img}`, 'product');
+  E.pname = el(`<span class="gold">${data.name}</span>`, 'pname');
+  E.pnameEn = el(data.nameEn || '', 'pnameEn');
+  E.tagline = el(data.tagline || '', 'tagline');
+  E.price = el(data.price ? `<span>${data.price}</span>` : '', 'price');
+
+  if (mode === 'reel') {
+    E.specsTitle = el('<span class="gold">المواصفات</span> 👇', 'specsTitle');
+    const box = el('', 'specs');
+    const n = data.specs.length, gap = n > 6 ? 14 : 24, h = n > 6 ? 118 : 138;
+    E.specs = data.specs.map((s, i) => {
+      const d = document.createElement('div'); d.className = 'spec';
+      d.style.top = `${i * (h + gap)}px`; d.style.height = `${h}px`;
+      d.innerHTML = `<div class="ic">${s.icon || '✨'}</div><div><div class="lb">${s.label}</div><div class="vl"><bdi>${s.value}</bdi></div></div>`;
+      box.appendChild(d); return d;
+    });
+    E.flavTitle = el('<span class="gold">النكهات المتوفرة</span> 😋', 'flavTitle');
+    E.flavSub = el(`${data.flavors.length} أطعام… اختار اللي يعجبك`, 'flavSub');
+    const fl = data.flavors, cols = fl.length > 10 ? 3 : 2, rows = Math.ceil(fl.length / cols);
+    const fw = cols === 3 ? 310 : 450, fh = cols === 3 ? 110 : 130, gx = 26, gy = cols === 3 ? 26 : 34;
+    const top0 = 580 + Math.max(0, (6 - rows) * (fh + gy) / 2);
+    E.flavs = fl.map((f, i) => {
+      const r = Math.floor(i / cols), c = i % cols;
+      const inRow = Math.min(cols, fl.length - r * cols);
+      const rowW = inRow * fw + (inRow - 1) * gx;
+      const d = document.createElement('div'); d.className = 'flav';
+      Object.assign(d.style, {
+        width: fw + 'px', height: fh + 'px', top: (top0 + r * (fh + gy)) + 'px',
+        right: ((W - rowW) / 2 + c * (fw + gx)) + 'px', fontSize: (cols === 3 ? 38 : 48) + 'px',
+        background: `radial-gradient(circle at 30% 25%, ${hexA(f.color, .65)}, ${f.color} 55%, ${hexA(f.color, .9)})`
+      });
+      d.innerHTML = `<span class="em">${f.emoji || '🍬'}</span><span>${f.name}</span>`;
+      document.getElementById('stage').appendChild(d); return d;
+    });
+  } else {
+    E.chips = el(data.specs.slice(0, 3).map(s => `<span class="chip">${s.icon || ''} <bdi>${s.value}</bdi></span>`).join(''), 'chips');
+    E.seeReel = el('👆 شوف الريلز الجديد بالبيج<br><span class="gold">وكل المواصفات والنكهات</span>', 'seeReel');
+  }
+  E.order = el('<span class="gold">اطلب هسه!</span>', 'orderNow');
+  E.phone = el('<span class="ic">📞</span><span class="num">07515341547</span>', 'phoneCard');
+  E.ctaHint = el('اتصال أو واتساب أو دز رسالة بالخاص 💬', 'ctaHint');
+  E.bly = el('<div class="t1">🛵 التوصيل عن طريق تطبيق بلي</div><div class="t2">يوصلك لباب البيت بأسرع وقت</div>', 'blyCard');
+  E.ctaLogo = el(logo, 'ctaLogo');
+  E.bar = el('<span>📞 <span class="num">07515341547</span></span><span>🛵 توصيل عبر بلي</span>', 'bottomBar');
+  DUR = mode === 'reel' ? 19 : 10;
+  return DUR;
+};
+
+// ---------- timeline ----------
+window.render = (t) => {
+  drawBg(t);
+  return MODE === 'reel' ? reel(t) : story(t);
+};
+
+function intro(t, end) {
+  const a = prog(t, .1, 1.1);
+  const out = prog(t, end - .5, .5);
+  const s = lerp(0, 1, easeElastic(a)) * lerp(1, .3, easeInOut(out));
+  set(E.logoBig, 1 - out, lerp(0, -300, easeInOut(out)), lerp(0, -600, easeInOut(out)), s, lerp(-25, 0, easeOut(a)));
+  set(E.ring, win(t, .4, end, .4, .4), 0, 0, 1 + .02 * Math.sin(t * 6), t * 160);
+  const b = prog(t, .7, .6);
+  set(E.badge, win(t, .7, end, .4, .35), 0, lerp(80, 0, easeBack(b)), lerp(.6, 1, easeBack(b)) * (1 + .04 * Math.sin(t * 8)));
+  set(E.newSub, win(t, 1.1, end, .4, .35), 0, lerp(40, 0, easeOut(prog(t, 1.1, .5))));
+}
+
+function productAt(t, frames) {
+  const x = kf(t, frames.map(f => [f[0], f[1]]));
+  const y = kf(t, frames.map(f => [f[0], f[2]]));
+  const s = kf(t, frames.map(f => [f[0], f[3]]));
+  const o = kf(t, frames.map(f => [f[0], f[4]]), k => k);
+  const fl = Math.sin(t * 2.2) * 18, rot = Math.sin(t * 1.4) * 4;
+  set(E.product, o, x, y + fl, s, rot);
+  set(E.rays, o * .9, x, y, s * 1.05, t * 18);
+}
+
+function cta(t, a) {
+  const k = prog(t, a, .6);
+  set(E.order, win(t, a, 1e9), 0, lerp(-120, 0, easeBack(k)), lerp(.5, 1, easeBack(k)) * (1 + .05 * Math.sin(t * 7)));
+  const k2 = prog(t, a + .4, .6);
+  set(E.phone, win(t, a + .4, 1e9), lerp(-900, 0, easeOut(k2)), 0, 1 + .025 * Math.sin(t * 9));
+  set(E.ctaHint, win(t, a + .8, 1e9), 0, lerp(30, 0, easeOut(prog(t, a + .8, .5))));
+  const k3 = prog(t, a + 1.1, .6);
+  set(E.bly, win(t, a + 1.1, 1e9), lerp(900, 0, easeOut(k3)), 0, 1, Math.sin(t * 3) * 1.2);
+  const k4 = prog(t, a + 1.5, .8);
+  set(E.ctaLogo, win(t, a + 1.5, 1e9), 0, 0, easeElastic(k4), Math.sin(t * 1.5) * 6);
+}
+
+function reel(t) {
+  intro(t, 2.8);
+  const persist = win(t, 2.6, 15.0);
+  set(E.logoSmall, persist, 0, 0, 1 + .03 * Math.sin(t * 3), Math.sin(t) * 4);
+  set(E.topTag, win(t, 2.8, 15.0), lerp(300, 0, easeBack(prog(t, 2.8, .5))), 0, 1 + .04 * Math.sin(t * 6));
+  set(E.bar, win(t, 3.2, 15.0), 0, lerp(160, 0, easeOut(prog(t, 3.2, .5))));
+
+  // product: enter -> centre -> slide left for specs -> hide for flavours -> small on CTA
+  productAt(t, [
+    [2.4, 0, 1100, .6, 0], [3.3, 0, 0, 1, 1], [7.0, 0, 0, 1, 1], [7.6, -250, 40, .72, 1],
+    [11.3, -250, 40, .72, 1], [11.8, -250, 1100, .6, 0], [14.9, 0, 1100, .6, 0], [15.6, 0, -660, .42, 1]
+  ]);
+  const nk = prog(t, 3.0, .6);
+  set(E.pname, win(t, 3.0, 7.2), 0, lerp(-60, 0, easeBack(nk)), lerp(1.3, 1, easeOut(nk)), 0, lerp(20, 0, nk));
+  set(E.pnameEn, win(t, 3.4, 7.2), 0, 0, 1);
+  set(E.tagline, win(t, 3.8, 7.2), 0, lerp(60, 0, easeOut(prog(t, 3.8, .5))), 1 + .03 * Math.sin(t * 5));
+  set(E.price, DATA.price ? win(t, 4.3, 7.2) : 0, 0, 0, easeBack(prog(t, 4.3, .5)));
+
+  set(E.specsTitle, win(t, 7.4, 11.4), lerp(400, 0, easeBack(prog(t, 7.4, .5))), 0);
+  E.specs.forEach((d, i) => {
+    const a = 7.8 + i * .38, k = prog(t, a, .55);
+    set(d, win(t, a, 11.4 + i * .05, .3, .3), lerp(700, 0, easeBack(k)), 0, 1 + (t > a + .55 ? .015 * Math.sin(t * 4 + i) : 0));
+  });
+
+  set(E.flavTitle, win(t, 11.6, 15.0), 0, lerp(-80, 0, easeBack(prog(t, 11.6, .5))), lerp(.6, 1, easeBack(prog(t, 11.6, .5))));
+  set(E.flavSub, win(t, 11.9, 15.0), 0, 0, 1);
+  E.flavs.forEach((d, i) => {
+    const a = 12.0 + i * .22, k = prog(t, a, .7);
+    set(d, win(t, a, 15.0, .25, .3), 0, Math.sin(t * 2.5 + i * 1.3) * 10, easeElastic(k), Math.sin(t * 2 + i) * 2.5);
+  });
+
+  cta(t, 15.2);
+}
+
+function story(t) {
+  intro(t, 2.4);
+  set(E.logoSmall, win(t, 2.2, 6.6), 0, 0, 1 + .03 * Math.sin(t * 3));
+  set(E.topTag, win(t, 2.4, 6.6), lerp(300, 0, easeBack(prog(t, 2.4, .5))), 0, 1 + .04 * Math.sin(t * 6));
+  productAt(t, [[2.0, 0, 1100, .6, 0], [2.9, 0, 0, .95, 1], [6.4, 0, 0, .95, 1], [7.0, 0, -660, .42, 1]]);
+  const nk = prog(t, 2.6, .6);
+  set(E.pname, win(t, 2.6, 6.6), 0, lerp(-60, 0, easeBack(nk)), lerp(1.3, 1, easeOut(nk)), 0, lerp(20, 0, nk));
+  set(E.pnameEn, win(t, 3.0, 6.6), 0, 0, 1);
+  set(E.chips, win(t, 3.6, 6.6), 0, lerp(80, 0, easeBack(prog(t, 3.6, .5))));
+  set(E.price, 0);
+  set(E.tagline, 0); set(E.bar, 0);
+  set(E.seeReel, 0);
+  cta(t, 6.8);
+}
+</script>
+</body>
+</html>

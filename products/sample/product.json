@@ -1,0 +1,24 @@
+{
+  "name": "اسم الجهاز",
+  "nameEn": "PRODUCT NAME",
+  "tagline": "سحبة ناعمة وطعم يدوخ 🔥",
+  "colors": ["#8B3DFF", "#1F6BFF"],
+  "image": "",
+  "price": "",
+  "specs": [
+    { "icon": "💨", "label": "عدد السحبات", "value": "15000 سحبة" },
+    { "icon": "🔋", "label": "البطارية", "value": "650 mAh" },
+    { "icon": "⚡", "label": "الشحن", "value": "Type-C سريع" },
+    { "icon": "💧", "label": "سعة السائل", "value": "16 مل" },
+    { "icon": "🧪", "label": "النيكوتين", "value": "5%" },
+    { "icon": "📱", "label": "الشاشة", "value": "تبين البطارية والسائل" }
+  ],
+  "flavors": [
+    { "name": "عنب ونعناع", "emoji": "🍇", "color": "#7B2CBF" },
+    { "name": "بطيخ ثلج", "emoji": "🍉", "color": "#E63946" },
+    { "name": "فراولة كيوي", "emoji": "🍓", "color": "#F15BB5" },
+    { "name": "مانجو", "emoji": "🥭", "color": "#F9A826" },
+    { "name": "بلوبيري ثلج", "emoji": "🫐", "color": "#3A6FF7" },
+    { "name": "نعناع بارد", "emoji": "🌿", "color": "#2EC4B6" }
+  ]
+}
