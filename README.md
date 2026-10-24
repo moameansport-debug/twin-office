@@ -16,3 +16,8 @@ node render.js ../products/<slug>/product.json story ../products/<slug>/story.mp
 ## الأسرار المطلوبة (Settings ← Secrets ← Actions)
 - `IG_USER_ID`
 - `IG_ACCESS_TOKEN`
+
+## بوت تلكرام
+الزبون يدز للبوت صورة المنتج وبالتعليق الفورم (الاسم، السعر، الوصف، المواصفات، النكهات)،
+وكل 5 دقائق `.github/workflows/telegram-bot.yml` يشغّل `bot/bot.py` اللي يصمم الريلز والستوري ويرجّعهن للزبون.
+يحتاج Secret باسم `TELEGRAM_BOT_TOKEN`.
