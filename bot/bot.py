@@ -164,8 +164,7 @@ def handle_order(chat, msg):
     send(chat, f"استلمنا طلب *{form['name']}* ✅\nقيد التصميم ⏳ راح يوصلك الريلز والستوري خلال دقائق.")
 
     work = Path(tempfile.mkdtemp())
-    photo = max(msg["photo"], key=lambda p: p.get("file_size", 0))
-    path = tg("getFile", file_id=photo["file_id"])["result"]["file_path"]
+    path = tg("getFile", file_id=image_of(msg))["result"]["file_path"]
     (work / "raw.jpg").write_bytes(requests.get(f"{FILE_API}/{path}", timeout=60).content)
     colors = prepare_image(work / "raw.jpg", work / "product.png")
 
@@ -194,10 +193,21 @@ def pending():
     return tg("getUpdates", timeout=0, allowed_updates=json.dumps(["message"])).get("result", [])
 
 
+def image_of(msg):
+    """file_id of the photo in a message: a normal photo, or an image sent as a file."""
+    if msg.get("photo"):
+        return max(msg["photo"], key=lambda p: p.get("file_size", 0))["file_id"]
+    doc = msg.get("document") or {}
+    if doc.get("mime_type", "").startswith("image/"):
+        return doc["file_id"]
+    return None
+
+
 def main():
     updates = pending()
+    print("updates:", [sorted((u.get("message") or {}).keys()) for u in updates], file=sys.stderr)
     if sys.argv[1:] == ["check"]:
-        has = any("photo" in u.get("message", {}) for u in updates)
+        has = any(image_of(u.get("message") or {}) for u in updates)
         print(f"has_work={'true' if has else 'false'}")
         if not has and updates:  # only text messages: answer them here, no render needed
             run(updates)
@@ -212,7 +222,7 @@ def run(updates):
         if not chat:
             continue
         try:
-            if "photo" in msg:
+            if image_of(msg):
                 handle_order(chat, msg)
             else:
                 send(chat, HELP)
