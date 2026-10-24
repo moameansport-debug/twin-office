@@ -1,0 +1,75 @@
+{
+  "name": "VOZOL RAVE",
+  "nameEn": "40000 PUFFS",
+  "tagline": "40 ألف سحبة تطوّل وياك 🔥",
+  "colors": [
+    "#9B30FF",
+    "#E0408A"
+  ],
+  "image": "box.png",
+  "price": "السعر 14,000 دينار فقط",
+  "specs": [
+    {
+      "icon": "💨",
+      "label": "عدد السحبات",
+      "value": "40,000 سحبة"
+    },
+    {
+      "icon": "🚀",
+      "label": "وضع Surge (دخان أكثف)",
+      "value": "25,000 سحبة"
+    },
+    {
+      "icon": "📊",
+      "label": "شاشة 270° ذكية",
+      "value": "تتفاعل وياك"
+    },
+    {
+      "icon": "🔥",
+      "label": "كويل Dual Mesh",
+      "value": "طعم أقوى وأنعم"
+    },
+    {
+      "icon": "⚡",
+      "label": "الشحن",
+      "value": "سريع Type-C"
+    },
+    {
+      "icon": "🧪",
+      "label": "النيكوتين",
+      "value": "20 ملغ (2%)"
+    }
+  ],
+  "flavors": [
+    {
+      "name": "عنب مثلج",
+      "emoji": "🍇",
+      "color": "#7B2CBF"
+    },
+    {
+      "name": "فراولة وركي",
+      "emoji": "🍓",
+      "color": "#E63946"
+    },
+    {
+      "name": "لوف 77",
+      "emoji": "💖",
+      "color": "#F15BB5"
+    },
+    {
+      "name": "نعناع مثلج",
+      "emoji": "🌿",
+      "color": "#14A39A"
+    },
+    {
+      "name": "خوخ مثلج",
+      "emoji": "🍑",
+      "color": "#FF7F6B"
+    },
+    {
+      "name": "خوخ ومنكا",
+      "emoji": "🥭",
+      "color": "#F3A712"
+    }
+  ]
+}

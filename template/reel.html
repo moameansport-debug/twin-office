@@ -30,18 +30,18 @@
   #rays { left:40px; top:430px; width:1000px; height:1000px; border-radius:50%;
     background:repeating-conic-gradient(from 0deg, rgba(255,255,255,.10) 0 6deg, transparent 6deg 22deg);
     -webkit-mask:radial-gradient(circle, #000 0, #000 30%, transparent 70%); mask:radial-gradient(circle, #000 0, #000 30%, transparent 70%); }
-  #product { left:220px; top:520px; width:640px; height:820px; display:flex; align-items:center; justify-content:center; }
+  #product { left:220px; top:540px; width:640px; height:760px; display:flex; align-items:center; justify-content:center; }
   #product .halo { position:absolute; inset:60px; border-radius:50%; background:radial-gradient(circle, var(--c1) 0%, transparent 65%); opacity:.75; filter:blur(30px); }
   #product img, #product svg { position:relative; max-width:100%; max-height:100%; object-fit:contain; filter:drop-shadow(0 30px 50px rgba(0,0,0,.6)); }
   #pname { left:40px; right:40px; top:260px; text-align:center; font-weight:900; font-size:108px; line-height:1.15; }
   #pnameEn { left:0; right:0; top:395px; text-align:center; font-family:'Cairo'; font-weight:700; font-size:46px; letter-spacing:10px; color:#cfc2ff; direction:ltr; }
-  #tagline { left:60px; right:60px; top:1370px; text-align:center; font-size:58px; font-weight:900; }
-  #price { left:0; right:0; top:1470px; text-align:center; }
+  #tagline { left:60px; right:60px; top:1330px; text-align:center; font-size:58px; font-weight:900; }
+  #price { left:0; right:0; top:1430px; text-align:center; }
   #price span { display:inline-block; padding:12px 50px; border-radius:24px; font-size:60px; font-weight:900; background:rgba(255,255,255,.1); border:3px solid var(--gold); color:#fff; }
 
   #specsTitle { right:70px; top:330px; font-family:'Lalezar','Noto Color Emoji'; font-size:96px; }
-  #specs { right:50px; top:480px; width:600px; }
-  .spec { position:absolute; right:0; width:600px; height:138px; border-radius:30px; display:flex; align-items:center; gap:22px; padding:0 26px;
+  #specs { right:50px; top:480px; width:560px; }
+  .spec { position:absolute; right:0; width:560px; height:138px; border-radius:30px; display:flex; align-items:center; gap:22px; padding:0 26px;
     background:linear-gradient(90deg, rgba(255,255,255,.14), rgba(255,255,255,.04)); border:2px solid rgba(255,255,255,.18);
     box-shadow:0 10px 40px rgba(0,0,0,.35), inset 0 0 30px rgba(139,61,255,.15); backdrop-filter:blur(8px); }
   .spec .ic { width:92px; height:92px; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:52px;
@@ -284,8 +284,8 @@ function reel(t) {
 
   // product: enter -> centre -> slide left for specs -> hide for flavours -> small on CTA
   productAt(t, [
-    [2.4, 0, 1100, .6, 0], [3.3, 0, 0, 1, 1], [7.0, 0, 0, 1, 1], [7.6, -250, 40, .72, 1],
-    [11.3, -250, 40, .72, 1], [11.8, -250, 1100, .6, 0], [14.9, 0, 1100, .6, 0], [15.6, 0, -660, .42, 1]
+    [2.4, 0, 1100, .6, 0], [3.3, 0, 0, 1, 1], [7.0, 0, 0, 1, 1], [7.6, -290, 40, .6, 1],
+    [11.3, -290, 40, .6, 1], [11.8, -290, 1100, .5, 0], [14.9, 0, 1100, .6, 0], [15.6, 0, -660, .42, 1]
   ]);
   const nk = prog(t, 3.0, .6);
   set(E.pname, win(t, 3.0, 7.2), 0, lerp(-60, 0, easeBack(nk)), lerp(1.3, 1, easeOut(nk)), 0, lerp(20, 0, nk));
