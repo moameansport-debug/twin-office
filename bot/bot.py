@@ -216,10 +216,13 @@ def main():
 
 
 def run(updates):
+    # an album arrives as one message per photo with the caption on only one of them
+    albums = {u["message"]["media_group_id"] for u in updates
+              if (u.get("message") or {}).get("caption") and u["message"].get("media_group_id")}
     for u in updates:
         msg = u.get("message") or {}
         chat = msg.get("chat", {}).get("id")
-        if not chat:
+        if not chat or (msg.get("media_group_id") in albums and not msg.get("caption")):
             continue
         try:
             if image_of(msg):
