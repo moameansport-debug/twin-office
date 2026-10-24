@@ -15,12 +15,13 @@ jobs:
     timeout-minutes: 30
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install requests pillow
+      - run: pip install requests pillow anthropic
       - name: Check for new orders
         id: check
         if: env.TELEGRAM_BOT_TOKEN != ''

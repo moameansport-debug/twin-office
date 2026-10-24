@@ -7,7 +7,7 @@ run reads the pending updates, handles them, then confirms them with the next of
 Usage: python bot/bot.py check   -> prints has_work=true|false (for the workflow)
        python bot/bot.py run     -> handle all pending messages
 """
-import colorsys, json, os, re, subprocess, sys, tempfile
+import colorsys, io, json, os, re, subprocess, sys, tempfile
 from pathlib import Path
 
 import requests
@@ -18,7 +18,14 @@ TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 API = f"https://api.telegram.org/bot{TOKEN}"
 FILE_API = f"https://api.telegram.org/file/bot{TOKEN}"
 
-FORM = """الاسم: VOZOL RAVE 40000
+# with an Anthropic key the specs and name are read from the box photo, so the form is short
+AI = bool(os.environ.get("ANTHROPIC_API_KEY"))
+
+FORM = """السعر: 14000
+النكهات:
+- عنب مثلج
+- فراولة وركي
+- نعناع مثلج""" if AI else """الاسم: VOZOL RAVE 40000
 السعر: 14000
 الوصف: 40 ألف سحبة تطوّل وياك
 المواصفات:
@@ -33,11 +40,12 @@ FORM = """الاسم: VOZOL RAVE 40000
 
 HELP = (
     "هلا بيك بمكتب التوام 👋\n\n"
-    "حتى أسويلك ريلز وستوري للمنتج:\n"
-    "1️⃣ دز **صورة وحدة** للمنتج.\n"
+    "حتى أسويلك ريلز وستوري وكابشن للمنتج:\n"
+    "1️⃣ دز *صورة وحدة* للمنتج، والأفضل الكارتون من القدام وتكون المواصفات واضحة.\n"
     "2️⃣ وبنفس الرسالة، بخانة التعليق (Caption) انسخ هذا الفورم وعدّله:\n\n"
     f"```\n{FORM}\n```\n\n"
-    "الوصف اختياري. خلال 5 إلى 15 دقيقة يوصلك الفيديو جاهز 🎬"
+    + ("المواصفات واسم المنتج آني أقراها من الكارتون. " if AI else "الوصف اختياري. ")
+    + "خلال 5 إلى 15 دقيقة يوصلك الفيديو جاهز 🎬"
 )
 
 SPEC_ICONS = [("سحب", "💨"), ("puff", "💨"), ("بطاري", "🔋"), ("mah", "🔋"), ("شحن", "⚡"),
@@ -60,8 +68,9 @@ def tg(method, **params):
     return r.json()
 
 
-def send(chat, text):
-    tg("sendMessage", chat_id=chat, text=text, parse_mode="Markdown")
+def send(chat, text, markdown=True):
+    params = {"parse_mode": "Markdown"} if markdown else {}
+    tg("sendMessage", chat_id=chat, text=text, **params)
 
 
 # ---------- form parsing ----------
@@ -135,15 +144,21 @@ def product_colors(img):
     return (picks + ["#8B3DFF", "#1F6BFF"])[:2]
 
 
-def prepare_image(src, dst):
+def prepare_image(src, dst, box=None):
+    """Crop the product out of the photo: to the box Claude found (0-1000 coords), else a centre crop."""
     img = Image.open(src).convert("RGB")
     W, H = img.size
-    h = int(H * .72)
-    w = min(W, int(h * .82))
-    cx, cy = W // 2, int(H * .45)
-    top = max(0, min(H - h, cy - h // 2))
-    left = max(0, min(W - w, cx - w // 2))
-    img = img.crop((left, top, left + w, top + h))
+    if box and len(box) == 4 and box[2] - box[0] > 50 and box[3] - box[1] > 50:
+        l, t, r, b = box[0] * W / 1000, box[1] * H / 1000, box[2] * W / 1000, box[3] * H / 1000
+        pad = .015 * max(W, H)
+        img = img.crop((max(0, l - pad), max(0, t - pad), min(W, r + pad), min(H, b + pad)))
+    else:
+        h = int(H * .72)
+        w = min(W, int(h * .82))
+        cx, cy = W // 2, int(H * .45)
+        top = max(0, min(H - h, cy - h // 2))
+        left = max(0, min(W - w, cx - w // 2))
+        img = img.crop((left, top, left + w, top + h))
     img = ImageEnhance.Color(ImageEnhance.Contrast(img).enhance(1.06)).enhance(1.1)
     if img.height < 1000:
         img = img.resize((int(img.width * 1000 / img.height), 1000), Image.LANCZOS)
@@ -157,22 +172,40 @@ def prepare_image(src, dst):
 # ---------- order ----------
 def handle_order(chat, msg):
     form = parse_form(msg.get("caption", ""))
-    missing = [n for n, k in (("الاسم", "name"), ("النكهات", "flavors")) if not form[k]]
+    needed = (("السعر", "price"), ("النكهات", "flavors")) if AI else (("الاسم", "name"), ("النكهات", "flavors"))
+    missing = [n for n, k in needed if not form[k]]
     if missing:
         send(chat, "⚠️ ناقص بالفورم: " + "، ".join(missing) + "\n\n" + HELP)
         return
-    send(chat, f"استلمنا طلب *{form['name']}* ✅\nقيد التصميم ⏳ راح يوصلك الريلز والستوري خلال دقائق.")
+    send(chat, "استلمنا طلبك ✅\nقيد التصميم ⏳ راح يوصلك الريلز والستوري والكابشن خلال دقائق.")
 
     work = Path(tempfile.mkdtemp())
     path = tg("getFile", file_id=image_of(msg))["result"]["file_path"]
-    (work / "raw.jpg").write_bytes(requests.get(f"{FILE_API}/{path}", timeout=60).content)
-    colors = prepare_image(work / "raw.jpg", work / "product.png")
+    raw = requests.get(f"{FILE_API}/{path}", timeout=60).content
+    (work / "raw.jpg").write_bytes(raw)
 
+    read, caption = {}, ""
+    if AI:
+        import vision
+        jpeg = io.BytesIO()
+        Image.open(io.BytesIO(raw)).convert("RGB").save(jpeg, "JPEG", quality=92)
+        try:
+            read = vision.analyze(jpeg.getvalue(), "image/jpeg", form["price"], form["flavors"], form["tagline"])
+            caption = read.get("caption", "")
+        except Exception as e:  # still deliver a design from the form if reading the box fails
+            print("vision failed:", e, file=sys.stderr)
+    colors = prepare_image(work / "raw.jpg", work / "product.png", read.get("box"))
+    hexes = [c for c in read.get("colors", []) if re.fullmatch(r"#[0-9A-Fa-f]{6}", c)]
+
+    specs = [spec_entry(s) for s in form["specs"][:7]] or [
+        {"icon": s["icon"], "label": s["label"], "value": s["value"]} for s in read.get("specs", [])[:6]]
+    tagline = form["tagline"] or read.get("tagline") or "وصل جديد… لا يفوتك"
     product = {
-        "name": form["name"], "nameEn": "", "colors": colors, "image": "product.png",
-        "tagline": (form["tagline"] + " 🔥") if form["tagline"] else "وصل جديد… لا يفوتك 🔥",
+        "name": form["name"] or read.get("name") or "منتج جديد", "nameEn": read.get("subtitle", ""),
+        "colors": (hexes + colors)[:2], "image": "product.png",
+        "tagline": tagline + " 🔥",
         "price": format_price(form["price"]),
-        "specs": [spec_entry(s) for s in form["specs"][:7]] or [{"icon": "✨", "label": "", "value": "جودة أصلية مضمونة"}],
+        "specs": specs or [{"icon": "✨", "label": "", "value": "جودة أصلية مضمونة"}],
         "flavors": [flavor_entry(f, i) for i, f in enumerate(form["flavors"][:12])],
     }
     (work / "product.json").write_text(json.dumps(product, ensure_ascii=False), encoding="utf-8")
@@ -186,7 +219,10 @@ def handle_order(chat, msg):
             requests.post(f"{API}/sendVideo", data={"chat_id": chat, "caption": caption, "supports_streaming": "true",
                                                     "width": 1080, "height": 1920},
                           files={"video": (f"{mode}.mp4", f, "video/mp4")}, timeout=300)
-    send(chat, "تم ✅ الفيديو بدون صوت حتى تضيف موسيقى ترند من انستكرام 🎵\n📞 07515341547")
+    if caption:
+        send(chat, "📝 الكابشن، انسخه ويه الريلز:")
+        send(chat, caption, markdown=False)
+    send(chat, "تم ✅ الفيديو بي موسيقى، وإذا تحب تكدر تبدلها بأغنية ترند من انستكرام 🎵\n📞 07515341547")
 
 
 def pending():

@@ -20,4 +20,5 @@ node render.js ../products/<slug>/product.json story ../products/<slug>/story.mp
 ## بوت تلكرام
 الزبون يدز للبوت صورة المنتج وبالتعليق الفورم (الاسم، السعر، الوصف، المواصفات، النكهات)،
 وكل 5 دقائق `.github/workflows/telegram-bot.yml` يشغّل `bot/bot.py` اللي يصمم الريلز والستوري ويرجّعهن للزبون.
-يحتاج Secret باسم `TELEGRAM_BOT_TOKEN`.
+يحتاج Secret باسم `TELEGRAM_BOT_TOKEN`، و`ANTHROPIC_API_KEY` (اختياري) حتى يقرأ المواصفات من الكارتون ويكتب الكابشن.
+الموسيقى بيتات أصلية تتولد بـ `python template/music.py`.

@@ -27,10 +27,14 @@ const path = require('path');
     await browser.close(); return;
   }
 
+  // original beat from assets/music, picked per product so posts don't all sound the same
+  const beats = fs.readdirSync(path.join(__dirname, 'assets/music')).filter(f => f.endsWith('.m4a')).sort();
+  const pick = data.music || beats[[...data.name].reduce((h, c) => h + c.codePointAt(0), 0) % beats.length];
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-',
-    '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo', '-shortest',
+    '-stream_loop', '-1', '-i', path.join(__dirname, 'assets/music', pick), '-t', String(dur),
+    '-af', `afade=t=in:d=0.3,afade=t=out:st=${dur - 1.5}:d=1.5`,
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '16', '-pix_fmt', 'yuv420p', '-profile:v', 'high',
-    '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+    '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
   const frames = Math.round(dur * fps);
   for (let i = 0; i < frames; i++) {
     await page.evaluate(t => window.render(t), i / fps);
