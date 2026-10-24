@@ -23,6 +23,7 @@ jobs:
       - run: pip install requests pillow
       - name: Check for new orders
         id: check
+        if: env.TELEGRAM_BOT_TOKEN != ''
         run: python bot/bot.py check >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         if: steps.check.outputs.has_work == 'true'
